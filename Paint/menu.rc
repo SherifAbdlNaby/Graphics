@@ -1,0 +1,32 @@
+#include "menu.h"
+
+MENU_ID MENU
+
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "E&xit", EXIT_ID
+        MENUITEM "S&ave", SAVE_ID
+        MENUITEM "L&oad", LOAD_ID
+    END
+    POPUP "&Line"
+    BEGIN
+        MENUITEM "&DDA Line", LINE_DDA
+        MENUITEM "&Midpoint Line", LINE_MIDPOINT
+    END
+    POPUP "&Circle"
+    BEGIN
+        MENUITEM "Carte&sian Circle", CIRCLE_MIDPOINT
+        MENUITEM "&Midpoint Circle", CIRCLE_CART
+    END
+    POPUP "F&illing"
+    BEGIN
+        MENUITEM "&BFS", FILL_BFS
+        MENUITEM "&DFS", FILL_DFS
+    END
+    POPUP "Line Clip&ping"
+    BEGIN
+        MENUITEM "Line Clipping &Enable", LINE_CLIP_ENABLE
+        MENUITEM "Line Clipping &Disable", LINE_CLIP_DISABLE
+    END
+END
