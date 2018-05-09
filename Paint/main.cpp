@@ -14,6 +14,7 @@
 #include "CIRCLE.h"
 #include "CLIPPER.h"
 #include "LOGS.h"
+#include "CURVE.h"
 
 using namespace std;
 
@@ -22,48 +23,58 @@ LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
 TCHAR szClassName[] = _T("LineWindow");
 
 
-int xs, ys, xe, ye;
-bool interceptSecondClick = false;
-int operation;
-int currentOperation = -1;
-bool clipping = false;
 
-void drawCurrentOperation(HWND &hwnd, PAINTSTRUCT &p){
+void drawCurrentOperation(HWND &hwnd, PAINTSTRUCT &p) {
     BeginPaint(hwnd, &p);
 
     if (LINE_DDA == currentOperation)
         if (clipping)
-            drawClipLine(p.hdc, xs, ys, xe, ye);
+            drawClippedLine(p.hdc, clicksPoints[0].x, clicksPoints[0].y, clicksPoints[1].x, clicksPoints[1].y);
         else
-            drawLineDDA(p.hdc, xs, ys, xe, ye);
+            drawLineDDA(p.hdc, clicksPoints[0].x, clicksPoints[0].y, clicksPoints[1].x, clicksPoints[1].y);
+    else if (LINE == currentOperation)
+        if (clipping)
+            drawClippedLine(p.hdc, clicksPoints[0].x, clicksPoints[0].y, clicksPoints[1].x, clicksPoints[1].y);
+        else
+            drawLine(p.hdc, clicksPoints[0].x, clicksPoints[0].y, clicksPoints[1].x, clicksPoints[1].y);
     else if (LINE_MIDPOINT == currentOperation)
         if (clipping)
-            drawClipLine(p.hdc, xs, ys, xe, ye);
+            drawClippedLine(p.hdc, clicksPoints[0].x, clicksPoints[0].y, clicksPoints[1].x, clicksPoints[1].y);
         else
-            drawLineMid(p.hdc, xs, ys, xe, ye);
+            drawLineMid(p.hdc, clicksPoints[0].x, clicksPoints[0].y, clicksPoints[1].x, clicksPoints[1].y);
     else if (CIRCLE_CART == currentOperation)
-        drawCircleCart(p.hdc, xs, ys, xe, ye);
+        drawCircleCart(p.hdc, clicksPoints[0].x, clicksPoints[0].y, clicksPoints[1].x, clicksPoints[1].y);
     else if (CIRCLE_MIDPOINT == currentOperation)
-        drawCircleMid(p.hdc, xs, ys, xe, ye);
+        drawCircleMid(p.hdc, clicksPoints[0].x, clicksPoints[0].y, clicksPoints[1].x, clicksPoints[1].y);
+    else if (CIRCLE_POLAR == currentOperation)
+        drawCirclePolar(p.hdc, clicksPoints[0].x, clicksPoints[0].y, clicksPoints[1].x, clicksPoints[1].y);
     else if (FILL_BFS == currentOperation)
-        fillBfs(hwnd, p.hdc, xs, ys);
+        fillBfs(hwnd, p.hdc, clicksPoints[0].x, clicksPoints[0].y);
     else if (FILL_DFS == currentOperation)
-        fillDfs(hwnd, p.hdc, xs, ys);
+        fillDfs(hwnd, p.hdc, clicksPoints[0].x, clicksPoints[0].y);
     else if (LINE_CLIP_ENABLE == currentOperation)
-        makeClippingRect(p.hdc, xs, ys, xe, ye), clipping = true;
+        makeClippingRect(p.hdc, clicksPoints[0].x, clicksPoints[0].y, clicksPoints[1].x, clicksPoints[1].y), clipping = true;
     else if (LINE_CLIP_DISABLE == currentOperation)
         clipping = false;
+    else if (HERMIT == currentOperation)
+        CurveHermite(p.hdc, clicksPoints[0].x, clicksPoints[0].y, clicksPoints[1].x, clicksPoints[1].y,
+                     clicksPoints[2].x, clicksPoints[2].y, clicksPoints[3].x, clicksPoints[3].y);
+    else if (BEZIER == currentOperation)
+        CurveBezier(p.hdc, clicksPoints[0].x, clicksPoints[0].y, clicksPoints[1].x, clicksPoints[1].y,
+                    clicksPoints[2].x, clicksPoints[2].y, clicksPoints[3].x, clicksPoints[3].y);
+    else if(FIVE_POINT == currentOperation || FOUR_POINT == currentOperation || THREE_POINT == currentOperation || SIX_POINT == currentOperation)
+    {
+        drawPolygon(p.hdc, clicksPoints, currentOperation);
+    }
     else return;
 
     EndPaint(hwnd, &p);
 }
 
-void drawOperationsLog(HWND &hwnd, PAINTSTRUCT &p){
+
+void drawOperationsLog(HWND &hwnd, PAINTSTRUCT &p) {
     for (int i = 0; i < logs.size(); ++i) {
-        xs = logs[i].xs;
-        xe = logs[i].xe;
-        ys = logs[i].ys;
-        ye = logs[i].ye;
+        clicksPoints = logs[i].points;
         currentOperation = logs[i].operation;
         InvalidateRect(hwnd, NULL, FALSE);
         drawCurrentOperation(hwnd, p);
@@ -152,7 +163,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
                     break;
                 default:
                     currentOperation = operation;
-                    interceptSecondClick = false;
+                    clicksPoints.clear();
                     break;
             }
             break;
@@ -160,7 +171,9 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             drawCurrentOperation(hwnd, p);
 
             //LOG DATA FOR SAVE
-            addToOperationsLogs(operationLog(xs, ys, xe, ye, currentOperation));
+            addToOperationsLogs(operationLog(clicksPoints, currentOperation));
+
+            clicksPoints.clear();
 
             EndPaint(hwnd, &p);
             break;
@@ -168,24 +181,38 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             x = LOWORD(lParam);
             y = HIWORD(lParam);
 
-            if (interceptSecondClick) {
-                xe = x;
-                ye = y;
-                interceptSecondClick = false;
-            } else {
-                xs = x;
-                ys = y;
+            clicksPoints.push_back({x,y});
 
-                //NEED TWO CLICKS.
-                if (currentOperation != FILL_DFS &&
-                        currentOperation != FILL_BFS &&
-                        currentOperation != LINE_CLIP_DISABLE)
-                {
-                    interceptSecondClick = true;
-                    break;
-                }
+
+            if(clicksPoints.size() == 4 && (currentOperation == HERMIT || currentOperation == BEZIER))
+            {
+                InvalidateRect(hwnd, NULL, FALSE);
             }
-            InvalidateRect(hwnd, NULL, FALSE);
+            else if(clicksPoints.size() == 1 && (currentOperation == FILL_DFS || currentOperation == FILL_BFS))
+            {
+                InvalidateRect(hwnd, NULL, FALSE);
+            }
+            else if(clicksPoints.size() == 6 && currentOperation == SIX_POINT)
+            {
+                InvalidateRect(hwnd, NULL, FALSE);
+            }
+            else if(clicksPoints.size() == 5 && currentOperation == FIVE_POINT)
+            {
+                InvalidateRect(hwnd, NULL, FALSE);
+            }
+            else if(clicksPoints.size() == 4 && currentOperation == FOUR_POINT)
+            {
+                InvalidateRect(hwnd, NULL, FALSE);
+            }
+            else if(clicksPoints.size() == 3 && currentOperation == THREE_POINT)
+            {
+                InvalidateRect(hwnd, NULL, FALSE);
+            }
+            else if(clicksPoints.size() == 2 && currentOperation != FILL_DFS && currentOperation != FILL_BFS && !(currentOperation == HERMIT || currentOperation == BEZIER || currentOperation == THREE_POINT || currentOperation == FOUR_POINT || currentOperation == FIVE_POINT || currentOperation == SIX_POINT))
+            {
+                InvalidateRect(hwnd, NULL, FALSE);
+            }
+
             break;
         case WM_DESTROY:
             PostQuitMessage(0);

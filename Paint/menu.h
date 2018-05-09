@@ -3,9 +3,11 @@
 
 #define MENU_ID 101
 #define EXIT_ID 9001
+#define LINE 9012
 #define LINE_DDA 9002
 #define LINE_MIDPOINT 9003
 #define CIRCLE_CART 9004
+#define CIRCLE_POLAR 9013
 #define CIRCLE_MIDPOINT 9005
 #define FILL_DFS 9006
 #define FILL_BFS 9007
@@ -13,6 +15,14 @@
 #define LINE_CLIP_DISABLE 9009
 #define SAVE_ID 9010
 #define LOAD_ID 9011
+#define HERMIT 9014
+#define BEZIER 9015
+
+
+#define THREE_POINT 1337
+#define FOUR_POINT 1338
+#define FIVE_POINT 1339
+#define SIX_POINT 1334
 
 
 #endif // MENU_H_INCLUDED

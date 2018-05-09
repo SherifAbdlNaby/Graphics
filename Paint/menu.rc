@@ -5,12 +5,13 @@ MENU_ID MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "E&xit", EXIT_ID
         MENUITEM "S&ave", SAVE_ID
         MENUITEM "L&oad", LOAD_ID
+        MENUITEM "E&xit", EXIT_ID
     END
     POPUP "&Line"
     BEGIN
+        MENUITEM "&Line", LINE
         MENUITEM "&DDA Line", LINE_DDA
         MENUITEM "&Midpoint Line", LINE_MIDPOINT
     END
@@ -18,6 +19,19 @@ BEGIN
     BEGIN
         MENUITEM "Carte&sian Circle", CIRCLE_MIDPOINT
         MENUITEM "&Midpoint Circle", CIRCLE_CART
+        MENUITEM "&Polar Circle", CIRCLE_POLAR
+    END
+    POPUP "&Curve"
+    BEGIN
+        MENUITEM "Bezeir Curve", BEZIER
+        MENUITEM "Hermit Curve", HERMIT
+    END
+    POPUP "&Polygons"
+    BEGIN
+        MENUITEM "Three Points", THREE_POINT
+        MENUITEM "Four Points", FOUR_POINT
+        MENUITEM "Five Points", FIVE_POINT
+        MENUITEM "Six Points", SIX_POINT
     END
     POPUP "F&illing"
     BEGIN

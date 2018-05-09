@@ -10,15 +10,23 @@
 
 using namespace std;
 
+
+
+struct point{
+    int x; int y;
+};
+
+vector<point> clicksPoints;
+int operation;
+int currentOperation = -1;
+bool clipping = false;
+int xr, xl, yt, yb;
+
 struct operationLog {
-    int xs, ys, xe, ye;
+    vector<point> points;
     int operation;
-    operationLog(int xs, int ys, int xe, int ye, int operation) : xs(xs), ys(ys), xe(xe), ye(ye),
-                                                                  operation(operation) {}
-
+    operationLog(const vector<point> &points, int operation) : points(points), operation(operation) {}
     operationLog(){};
-
-
 };
 
 vector<operationLog> logs;
@@ -26,10 +34,14 @@ vector<operationLog> logs;
 void saveOperationsLog(){
     ofstream file;
     file.open ("logs.log");
-
-    for (int i = 0; i < logs.size(); ++i)
-        file << logs[i].xs << endl << logs[i].ys  << endl << logs[i].xe << endl << logs[i].ye << endl << logs[i].operation << endl;
-
+    for (int i = 0; i < logs.size(); ++i) {
+        file << logs[i].points.size() << endl;
+        for (int j = 0; j < logs[i].points.size(); ++j) {
+            file << logs[i].points[j].x << endl;
+            file << logs[i].points[j].y << endl;
+        }
+        file << logs[i].operation << endl;
+    }
     file.close();
 }
 
@@ -39,9 +51,18 @@ void readOperationsLog(){
     ifstream file;
     file.open ("logs.log");
 
-    operationLog log;
-    while(file >> log.xs >> log.ys >> log.xe >> log.ye >> log.operation)
+    int pointSize,x ,y;
+    while(file >> pointSize)
+    {
+        operationLog log;
+        for (int i = 0; i < pointSize; ++i) {
+            file >> x;
+            file >> y;
+            log.points.push_back({x,y});
+        }
+        file >> log.operation;
         logs.push_back(log);
+    }
 
     file.close();
 }

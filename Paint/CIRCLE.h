@@ -59,5 +59,23 @@ void drawCircleMid(HDC hdc, int xc, int yc, int xe, int ye)
 
 }
 
+void drawCirclePolar(HDC hdc, int xc, int yc, int xe, int ye) {
+    int dx = xe-xc;
+    int dy = ye-yc;
+    int R = sqrt(dx*dx + dy*dy);
+
+    double dtheta = 1.0 / R;
+
+    double x, y;
+
+    double quad = M_PI / 4.0;
+
+    for (double theta = 0; theta < quad; theta += dtheta) {
+        x = R*cos(theta);
+        y = R*sin(theta);
+        draw8Points(hdc, round(x), round(y), xc, yc);
+    }
+}
+
 
 #endif //TASK_CIRCLE_H

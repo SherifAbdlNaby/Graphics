@@ -6,4 +6,5 @@ set(CMAKE_CXX_STANDARD 11)
 add_executable(Paint
         main.cpp
         menu.h
-        menu.rc FILL.h LINE.h UTIL.h CIRCLE.h CLIPPER.h LOGS.h)
+        menu.rc FILL.h LINE.h UTIL.h CIRCLE.h CLIPPER.h LOGS.h CURVE.h)
+
