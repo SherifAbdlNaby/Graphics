@@ -15,7 +15,10 @@ void CurveBezier(HDC hdc, int x1, int y1, int x2, int y2, int x3, int y3, int x4
 
 void CurveHermite(HDC hdc, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
 {
-
+    x2 = x2 - x1;
+    x4 = x4 - x3;
+    y2 = y2 - y1;
+    y4 = y3 - y4;
 
     int a1, b1, c1, d1;
     a1 = 2 * x1 + x2 - 2 * x3 + x4;
